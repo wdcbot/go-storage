@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.3.0-alpha (2024-12-28)
+## v0.3.0-alpha (2025-12-28)
 
 ### Added
 - `DiskWrapper.Storage()` 公开方法，用于访问 AdvancedStorage 接口
@@ -9,7 +9,7 @@
 - 修复测试中 mockStorage 的 data race 问题
 - 修复 example 中引用私有方法的注释
 
-## v0.2.0-alpha (2024-12-28)
+## v0.2.0-alpha (2025-12-28)
 
 ### Added
 - 阿里云 OSS driver (`drivers/aliyun`)
@@ -21,7 +21,7 @@
 - `Copy` / `Move` 文件操作
 - `Size` / `Metadata` 文件信息
 
-## v0.1.0-alpha (2024-12-28)
+## v0.1.0-alpha (2025-12-28)
 
 ### Added
 - 核心 Storage 接口

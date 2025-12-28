@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 // UploadFile is a convenience function to upload a file from disk.
@@ -133,9 +134,11 @@ func GenerateKeyFlat(prefix, filename string) string {
 
 // generateUUID generates a simple UUID-like string.
 func generateUUID() string {
-	// Simple implementation using timestamp + random
+	// Use timestamp + random for uniqueness
 	now := time.Now().UnixNano()
-	return fmt.Sprintf("%x", now)
+	// Add some randomness from memory address
+	var x int
+	return fmt.Sprintf("%x%x", now, uintptr(unsafe.Pointer(&x)))
 }
 
 // Must panics if err is not nil. Useful for initialization.
