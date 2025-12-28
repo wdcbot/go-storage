@@ -35,18 +35,15 @@
 
 ```bash
 go get github.com/wdcbot/go-storage
+```
 
-# 按需引入驱动
-go get github.com/wdcbot/go-storage/drivers/local
-go get github.com/wdcbot/go-storage/drivers/aliyun
-go get github.com/wdcbot/go-storage/drivers/tencent
-go get github.com/wdcbot/go-storage/drivers/s3
-go get github.com/wdcbot/go-storage/drivers/qiniu
-go get github.com/wdcbot/go-storage/drivers/huawei
-go get github.com/wdcbot/go-storage/drivers/baidu
-go get github.com/wdcbot/go-storage/drivers/upyun
-go get github.com/wdcbot/go-storage/drivers/azure
-go get github.com/wdcbot/go-storage/drivers/gcs
+云存储 driver 按需安装：
+```bash
+go get github.com/wdcbot/go-storage/drivers/aliyun   # 阿里云
+go get github.com/wdcbot/go-storage/drivers/tencent  # 腾讯云
+go get github.com/wdcbot/go-storage/drivers/s3       # AWS S3 / MinIO
+go get github.com/wdcbot/go-storage/drivers/qiniu    # 七牛云
+# ... 更多见下方表格
 ```
 
 ## 快速开始

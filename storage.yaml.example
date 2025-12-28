@@ -1,115 +1,54 @@
-# Go-Storage Configuration Example
-# Copy this file to storage.yaml and configure your storage backends
+# Go-Storage 配置示例
+# 将此配置放入你的 config.yaml 中的 storage 字段
 
-# Default storage backend to use
-default: local
+storage:
+  default: local
+  disks:
+    # 本地存储（内置，无需额外 import）
+    local:
+      driver: local
+      root: ./uploads
+      base_url: http://localhost:8080/files
 
-# Storage backends configuration
-storages:
-  # Local filesystem storage
-  local:
-    driver: local
-    options:
-      root: ./uploads          # Root directory for file storage
-      base_url: http://localhost:8080/files  # Base URL for generating public URLs
-
-  # Alibaba Cloud OSS
-  aliyun:
-    driver: aliyun
-    options:
+    # 阿里云 OSS
+    aliyun:
+      driver: aliyun
       endpoint: oss-cn-hangzhou.aliyuncs.com
-      access_key_id: ${ALIYUN_ACCESS_KEY_ID}      # Use env var
-      access_key_secret: ${ALIYUN_ACCESS_KEY_SECRET}
       bucket: my-bucket
-      domain: https://cdn.example.com  # Optional: custom domain
+      access_key_id: ${ALIYUN_ACCESS_KEY_ID}
+      access_key_secret: ${ALIYUN_ACCESS_KEY_SECRET}
+      domain: https://cdn.example.com  # 可选
 
-  # Tencent Cloud COS
-  tencent:
-    driver: tencent
-    options:
-      secret_id: ${TENCENT_SECRET_ID}
-      secret_key: ${TENCENT_SECRET_KEY}
+    # 腾讯云 COS
+    tencent:
+      driver: tencent
       region: ap-guangzhou
       bucket: my-bucket-1234567890
-      domain: https://cdn.example.com  # Optional
+      secret_id: ${TENCENT_SECRET_ID}
+      secret_key: ${TENCENT_SECRET_KEY}
 
-  # AWS S3
-  s3:
-    driver: s3
-    options:
+    # AWS S3
+    s3:
+      driver: s3
       region: us-east-1
       bucket: my-bucket
       access_key_id: ${AWS_ACCESS_KEY_ID}
       secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-      # endpoint: https://s3.custom.com  # Optional: for S3-compatible services
-      # force_path_style: true           # Required for MinIO
 
-  # MinIO (S3-compatible)
-  minio:
-    driver: minio
-    options:
+    # MinIO
+    minio:
+      driver: s3
       endpoint: http://localhost:9000
       bucket: my-bucket
       access_key_id: minioadmin
       secret_access_key: minioadmin
       force_path_style: true
 
-  # Qiniu Cloud
-  qiniu:
-    driver: qiniu
-    options:
+    # 七牛云
+    qiniu:
+      driver: qiniu
+      bucket: my-bucket
       access_key: ${QINIU_ACCESS_KEY}
       secret_key: ${QINIU_SECRET_KEY}
-      bucket: my-bucket
       domain: https://cdn.example.com
-      region: z0  # z0=华东, z1=华北, z2=华南, na0=北美, as0=东南亚
-      use_https: true
-      private: false
-
-  # Huawei Cloud OBS
-  huawei:
-    driver: huawei
-    options:
-      endpoint: obs.cn-north-4.myhuaweicloud.com
-      access_key: ${HUAWEI_ACCESS_KEY}
-      secret_key: ${HUAWEI_SECRET_KEY}
-      bucket: my-bucket
-      domain: https://cdn.example.com  # Optional
-
-  # Baidu Cloud BOS
-  baidu:
-    driver: baidu
-    options:
-      endpoint: bj.bcebos.com
-      access_key: ${BAIDU_ACCESS_KEY}
-      secret_key: ${BAIDU_SECRET_KEY}
-      bucket: my-bucket
-      domain: https://cdn.example.com  # Optional
-
-  # Upyun
-  upyun:
-    driver: upyun
-    options:
-      bucket: my-bucket
-      operator: ${UPYUN_OPERATOR}
-      password: ${UPYUN_PASSWORD}
-      domain: https://cdn.example.com
-
-  # Azure Blob Storage
-  azure:
-    driver: azure
-    options:
-      account_name: ${AZURE_STORAGE_ACCOUNT}
-      account_key: ${AZURE_STORAGE_KEY}
-      container: my-container
-      domain: https://cdn.example.com  # Optional
-
-  # Google Cloud Storage
-  gcs:
-    driver: gcs
-    options:
-      bucket: my-bucket
-      credentials_file: /path/to/service-account.json  # Or use GOOGLE_APPLICATION_CREDENTIALS env
-      # credentials_json: '{"type":"service_account",...}'  # Or inline JSON
-      project_id: my-project
-      domain: https://cdn.example.com  # Optional
+      region: z0  # z0=华东, z1=华北, z2=华南
