@@ -20,10 +20,10 @@
 
 | 驱动 | 说明 | 状态 |
 |------|------|------|
-| `local` | 本地文件系统 | ✅ 内置可用 |
-| `aliyun` | 阿里云 OSS | 🚧 开发中 |
-| `tencent` | 腾讯云 COS | 🚧 开发中 |
-| `s3` | AWS S3 / MinIO | 🚧 开发中 |
+| `local` | 本地文件系统 | ✅ 内置 |
+| `aliyun` / `oss` | 阿里云 OSS | ✅ 可用 |
+| `tencent` / `cos` | 腾讯云 COS | ✅ 可用 |
+| `s3` / `minio` | AWS S3 / MinIO | ✅ 可用 |
 | `qiniu` | 七牛云 | 🚧 开发中 |
 | `huawei` | 华为云 OBS | 🚧 开发中 |
 | `baidu` | 百度云 BOS | 🚧 开发中 |
@@ -31,15 +31,18 @@
 | `azure` | Azure Blob | 🚧 开发中 |
 | `gcs` | Google Cloud Storage | 🚧 开发中 |
 
-> 云存储 driver 代码在 `_examples/drivers/` 目录，可参考实现。正式版本即将发布。
-
 ## 安装
 
 ```bash
 go get github.com/wdcbot/go-storage
 ```
 
-目前只有 `local` driver 可用，云存储 driver 开发中。
+云存储 driver 按需安装：
+```bash
+go get github.com/wdcbot/go-storage/drivers/aliyun   # 阿里云 OSS
+go get github.com/wdcbot/go-storage/drivers/tencent  # 腾讯云 COS
+go get github.com/wdcbot/go-storage/drivers/s3       # AWS S3 / MinIO
+```
 
 ## 快速开始
 
@@ -74,6 +77,7 @@ import (
     
     "github.com/spf13/viper"
     "github.com/wdcbot/go-storage"
+    _ "github.com/wdcbot/go-storage/drivers/aliyun" // 使用阿里云时 import
 )
 
 func main() {
@@ -90,6 +94,9 @@ func main() {
     // 下载
     content, _ := storage.GetString("hello.txt")
     fmt.Println(content)
+    
+    // 使用指定 disk
+    storage.Disk("aliyun").PutFile("images/photo.jpg", "/path/to/photo.jpg")
     
     // 删除
     storage.Delete("hello.txt")
