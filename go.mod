@@ -3,6 +3,7 @@ module github.com/wdcbot/go-storage
 go 1.21
 
 require (
+	github.com/wdcbot/go-storage/drivers/local v0.0.0-20251228015841-6dba4ad5fd88
 	gopkg.in/yaml.v3 v3.0.1
 )
 

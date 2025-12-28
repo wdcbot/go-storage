@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 
@@ -53,11 +54,11 @@ func main() {
 	}
 	defer reader.Close()
 
-	buf := new(strings.Builder)
-	if _, err := buf.ReadFrom(reader); err != nil {
+	data, err := io.ReadAll(reader)
+	if err != nil {
 		log.Fatalf("Read failed: %v", err)
 	}
-	fmt.Printf("Content: %s\n", buf.String())
+	fmt.Printf("Content: %s\n", string(data))
 
 	// Delete the file
 	if err := disk.Delete(ctx, "test/hello.txt"); err != nil {
