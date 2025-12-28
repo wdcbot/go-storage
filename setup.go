@@ -128,6 +128,19 @@ func (d *DiskWrapper) storage() (Storage, error) {
 	return mgr.Disk(d.name)
 }
 
+// Storage returns the underlying Storage interface.
+// Use this to access AdvancedStorage features like SignedURL, List, etc.
+//
+// Example:
+//
+//	s, err := storage.Disk("aliyun").Storage()
+//	if adv, ok := s.(storage.AdvancedStorage); ok {
+//	    url, _ := adv.SignedURL(ctx, "file.txt", time.Hour)
+//	}
+func (d *DiskWrapper) Storage() (Storage, error) {
+	return d.storage()
+}
+
 // Put uploads data to the storage.
 func (d *DiskWrapper) Put(key string, reader io.Reader, opts ...UploadOption) (*UploadResult, error) {
 	s, err := d.storage()

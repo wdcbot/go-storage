@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0-alpha (2024-12-28)
+
+### Added
+- `DiskWrapper.Storage()` 公开方法，用于访问 AdvancedStorage 接口
+
+### Fixed
+- 修复测试中 mockStorage 的 data race 问题
+- 修复 example 中引用私有方法的注释
+
 ## v0.2.0-alpha (2024-12-28)
 
 ### Added

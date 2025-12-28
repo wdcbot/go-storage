@@ -81,18 +81,29 @@ func main() {
 	// === 使用指定 disk ===
 	// storage.Disk("aliyun").PutString("cloud.txt", "Hello Cloud!")
 
-	// === 高级操作（需要 AdvancedStorage）===
-	// disk, _ := storage.Disk("").storage()
-	// if adv, ok := disk.(storage.AdvancedStorage); ok {
-	//     // 签名 URL（私有文件临时访问）
+	// === 高级操作（AdvancedStorage）===
+	// 云存储驱动支持更多功能，通过 Storage() 方法获取底层接口：
+	//
+	// s, err := storage.Disk("aliyun").Storage()
+	// if err != nil {
+	//     log.Fatal(err)
+	// }
+	// if adv, ok := s.(storage.AdvancedStorage); ok {
+	//     ctx := context.Background()
+	//
+	//     // 生成临时签名 URL（私有文件访问）
 	//     signedURL, _ := adv.SignedURL(ctx, "private.txt", time.Hour)
 	//
-	//     // 列出文件
+	//     // 列出目录下的文件
 	//     list, _ := adv.List(ctx, "images/")
 	//
-	//     // 复制/移动
+	//     // 复制/移动文件
 	//     adv.Copy(ctx, "a.txt", "b.txt")
 	//     adv.Move(ctx, "old.txt", "new.txt")
+	//
+	//     // 获取文件信息
+	//     size, _ := adv.Size(ctx, "file.txt")
+	//     meta, _ := adv.Metadata(ctx, "file.txt")
 	// }
 
 	// 清理测试文件

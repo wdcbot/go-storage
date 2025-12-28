@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -11,6 +12,7 @@ import (
 // mockStorage is a simple mock for testing.
 type mockStorage struct {
 	files map[string][]byte
+	mu    sync.RWMutex
 }
 
 func newMockStorage() *mockStorage {
@@ -22,12 +24,16 @@ func (m *mockStorage) Upload(ctx context.Context, key string, reader io.Reader, 
 	if err != nil {
 		return nil, err
 	}
+	m.mu.Lock()
 	m.files[key] = data
+	m.mu.Unlock()
 	return &UploadResult{Key: key, Size: int64(len(data))}, nil
 }
 
 func (m *mockStorage) Download(ctx context.Context, key string) (io.ReadCloser, error) {
+	m.mu.RLock()
 	data, ok := m.files[key]
+	m.mu.RUnlock()
 	if !ok {
 		return nil, ErrNotFound
 	}
@@ -35,12 +41,16 @@ func (m *mockStorage) Download(ctx context.Context, key string) (io.ReadCloser, 
 }
 
 func (m *mockStorage) Delete(ctx context.Context, key string) error {
+	m.mu.Lock()
 	delete(m.files, key)
+	m.mu.Unlock()
 	return nil
 }
 
 func (m *mockStorage) Exists(ctx context.Context, key string) (bool, error) {
+	m.mu.RLock()
 	_, ok := m.files[key]
+	m.mu.RUnlock()
 	return ok, nil
 }
 
