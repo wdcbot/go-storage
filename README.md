@@ -52,80 +52,83 @@ go get github.com/wdcbot/go-storage/drivers/gcs
 
 ## 快速开始
 
-### 方式一：独立配置文件
-
-创建 `storage.yaml`：
-
-```yaml
-default: local
-
-storages:
-  local:
-    driver: local
-    options:
-      root: ./uploads
-      base_url: http://localhost:8080/files
-```
-
-```go
-storage.Init("storage.yaml")
-```
-
-### 方式二：嵌入现有配置文件
-
-在你的 `config.yaml` 中添加 storage 配置：
+在你现有的 `config.yaml` 中添加 storage 配置：
 
 ```yaml
 app:
   name: myapp
   port: 8080
 
-database:
-  host: localhost
-
-storage:                    # <-- 嵌入这里
+storage:
   default: local
-  storages:
+  disks:
     local:
       driver: local
-      options:
-        root: ./uploads
-```
-
-```go
-storage.InitEmbedded("config.yaml")
-```
-
-### 方式三：自定义配置 key
-
-```yaml
-# config.yaml
-oss:                        # <-- 自定义 key
-  default: aliyun
-  storages:
+      root: ./uploads
+      base_url: http://localhost:8080/files
+    
     aliyun:
       driver: aliyun
-      options:
-        bucket: my-bucket
+      endpoint: oss-cn-hangzhou.aliyuncs.com
+      bucket: my-bucket
+      access_key_id: ${ALIYUN_ACCESS_KEY_ID}
+      access_key_secret: ${ALIYUN_ACCESS_KEY_SECRET}
 ```
 
 ```go
-storage.InitEmbeddedWithKey("config.yaml", "oss")
+package main
+
+import (
+    "github.com/spf13/viper"
+    "github.com/wdcbot/go-storage"
+    _ "github.com/wdcbot/go-storage/drivers/local"
+    _ "github.com/wdcbot/go-storage/drivers/aliyun"
+)
+
+func main() {
+    // 加载你的配置
+    viper.SetConfigFile("config.yaml")
+    viper.ReadInConfig()
+    
+    // 一行初始化
+    storage.MustSetup(viper.GetStringMap("storage"))
+    
+    // 直接用！
+    storage.Put("hello.txt", strings.NewReader("Hello World"))
+    
+    // 指定 disk
+    storage.Disk("aliyun").Put("images/photo.jpg", file)
+    
+    // 下载
+    reader, _ := storage.Get("hello.txt")
+    defer reader.Close()
+    
+    // 删除
+    storage.Delete("hello.txt")
+    
+    // 检查存在
+    exists, _ := storage.Exists("hello.txt")
+    
+    // 获取 URL
+    url, _ := storage.URL("hello.txt")
+}
 ```
 
-### 方式四：与 viper/koanf 等配置库集成
+### 不用 viper？直接传 map
 
 ```go
-import "github.com/spf13/viper"
+storage.MustSetup(map[string]any{
+    "default": "local",
+    "disks": map[string]any{
+        "local": map[string]any{
+            "driver": "local",
+            "root":   "./uploads",
+        },
+    },
+})
 
-viper.SetConfigFile("config.yaml")
-viper.ReadInConfig()
-
-cfg, _ := storage.NewConfigFromMap(viper.GetStringMap("storage"))
-storage.InitFromConfig(cfg)
+storage.Put("test.txt", strings.NewReader("hello"))
 ```
-
-### 使用
 
 ```go
 package main
@@ -160,49 +163,47 @@ func main() {
 
 ## API
 
-### Storage 接口（基础）
+### 简化 API（推荐）
 
 ```go
-type Storage interface {
-    Upload(ctx, key, reader, opts...) (*UploadResult, error)
-    Download(ctx, key) (io.ReadCloser, error)
-    Delete(ctx, key) error
-    Exists(ctx, key) (bool, error)
-    URL(ctx, key) (string, error)
-    Close() error
-}
+// 默认 disk
+storage.Put(key, reader)           // 上传
+storage.Get(key)                   // 下载
+storage.Delete(key)                // 删除
+storage.Exists(key)                // 检查存在
+storage.URL(key)                   // 获取 URL
+
+// 指定 disk
+storage.Disk("aliyun").Put(key, reader)
+storage.Disk("aliyun").Get(key)
 ```
 
-### AdvancedStorage 接口（扩展）
+### 带 Context（需要超时控制时）
 
 ```go
-type AdvancedStorage interface {
-    Storage
-    SignedURL(ctx, key, expires) (string, error)  // 签名 URL
-    List(ctx, prefix, opts...) (*ListResult, error) // 文件列表
-    Copy(ctx, src, dst) error                      // 复制
-    Move(ctx, src, dst) error                      // 移动
-    Size(ctx, key) (int64, error)                  // 文件大小
-    Metadata(ctx, key) (*FileInfo, error)          // 元数据
-}
+ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+defer cancel()
+
+storage.Disk("aliyun").PutWithContext(ctx, key, reader)
+storage.Disk("aliyun").GetWithContext(ctx, key)
 ```
 
 ### 上传选项
 
 ```go
 // 设置 Content-Type
-storage.WithContentType("image/jpeg")
+storage.Put(key, reader, storage.WithContentType("image/jpeg"))
 
 // 设置元数据
-storage.WithMetadata(map[string]string{"author": "test"})
+storage.Put(key, reader, storage.WithMetadata(map[string]string{"author": "test"}))
 
 // 设置访问权限
-storage.WithACL("public-read")
+storage.Put(key, reader, storage.WithACL("public-read"))
 
 // 上传进度回调
-storage.WithProgress(func(uploaded, total int64) {
+storage.Put(key, reader, storage.WithProgress(func(uploaded, total int64) {
     fmt.Printf("Progress: %d/%d\n", uploaded, total)
-})
+}))
 ```
 
 ### 辅助函数
@@ -261,15 +262,15 @@ disk = storage.WrapWithLogging(disk, "aliyun", myLogger)
 
 ## 配置说明
 
+配置直接放在你的 `config.yaml` 里，所有参数平铺（不需要 `options` 嵌套）：
+
 ### 本地存储 (local)
 
 ```yaml
 local:
   driver: local
-  options:
-    root: ./uploads        # 存储根目录
-    base_url: http://...   # 访问 URL 前缀
-    perm: 0644             # 文件权限
+  root: ./uploads        # 存储根目录
+  base_url: http://...   # 访问 URL 前缀
 ```
 
 ### 阿里云 OSS (aliyun)
@@ -277,12 +278,11 @@ local:
 ```yaml
 aliyun:
   driver: aliyun
-  options:
-    endpoint: oss-cn-hangzhou.aliyuncs.com
-    access_key_id: xxx
-    access_key_secret: xxx
-    bucket: my-bucket
-    domain: https://cdn.example.com  # 可选：自定义域名
+  endpoint: oss-cn-hangzhou.aliyuncs.com
+  access_key_id: xxx       # 或用环境变量 ${ALIYUN_ACCESS_KEY_ID}
+  access_key_secret: xxx
+  bucket: my-bucket
+  domain: https://cdn.example.com  # 可选：自定义域名
 ```
 
 ### 腾讯云 COS (tencent)
@@ -290,11 +290,10 @@ aliyun:
 ```yaml
 tencent:
   driver: tencent
-  options:
-    secret_id: xxx
-    secret_key: xxx
-    region: ap-guangzhou
-    bucket: my-bucket-1234567890
+  secret_id: xxx
+  secret_key: xxx
+  region: ap-guangzhou
+  bucket: my-bucket-1234567890
 ```
 
 ### AWS S3 / MinIO (s3)
@@ -302,13 +301,12 @@ tencent:
 ```yaml
 s3:
   driver: s3
-  options:
-    region: us-east-1
-    bucket: my-bucket
-    access_key_id: xxx
-    secret_access_key: xxx
-    endpoint: http://localhost:9000  # MinIO 需要
-    force_path_style: true           # MinIO 需要
+  region: us-east-1
+  bucket: my-bucket
+  access_key_id: xxx
+  secret_access_key: xxx
+  endpoint: http://localhost:9000  # MinIO 需要
+  force_path_style: true           # MinIO 需要
 ```
 
 ### 七牛云 (qiniu)
@@ -316,70 +314,11 @@ s3:
 ```yaml
 qiniu:
   driver: qiniu
-  options:
-    access_key: xxx
-    secret_key: xxx
-    bucket: my-bucket
-    domain: https://cdn.example.com
-    region: z0  # z0=华东, z1=华北, z2=华南
-```
-
-### 华为云 OBS (huawei)
-
-```yaml
-huawei:
-  driver: huawei
-  options:
-    endpoint: obs.cn-north-4.myhuaweicloud.com
-    access_key: xxx
-    secret_key: xxx
-    bucket: my-bucket
-```
-
-### 百度云 BOS (baidu)
-
-```yaml
-baidu:
-  driver: baidu
-  options:
-    endpoint: bj.bcebos.com
-    access_key: xxx
-    secret_key: xxx
-    bucket: my-bucket
-```
-
-### 又拍云 (upyun)
-
-```yaml
-upyun:
-  driver: upyun
-  options:
-    bucket: my-bucket
-    operator: xxx
-    password: xxx
-    domain: https://cdn.example.com
-```
-
-### Azure Blob Storage (azure)
-
-```yaml
-azure:
-  driver: azure
-  options:
-    account_name: xxx
-    account_key: xxx
-    container: my-container
-```
-
-### Google Cloud Storage (gcs)
-
-```yaml
-gcs:
-  driver: gcs
-  options:
-    bucket: my-bucket
-    credentials_file: /path/to/service-account.json
-    # Or use GOOGLE_APPLICATION_CREDENTIALS env var
+  access_key: xxx
+  secret_key: xxx
+  bucket: my-bucket
+  domain: https://cdn.example.com
+  region: z0  # z0=华东, z1=华北, z2=华南
 ```
 
 ## 环境变量
