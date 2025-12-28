@@ -8,6 +8,78 @@
 
 配置驱动的 Go 文件存储库。一行代码初始化，统一 API 操作多种存储后端。
 
+## 从零开始测试
+
+```bash
+# 1. 创建测试项目
+mkdir test-storage && cd test-storage
+go mod init test-storage
+
+# 2. 安装
+go get github.com/wdcbot/go-storage@latest
+
+# 3. 创建 main.go
+cat > main.go << 'EOF'
+package main
+
+import (
+    "fmt"
+    "log"
+
+    "github.com/wdcbot/go-storage"
+)
+
+func main() {
+    // 初始化本地存储
+    storage.MustSetup(map[string]any{
+        "default": "local",
+        "disks": map[string]any{
+            "local": map[string]any{
+                "driver":   "local",
+                "root":     "./uploads",
+                "base_url": "http://localhost:8080/files",
+            },
+        },
+    })
+
+    // 上传字符串
+    result, err := storage.PutString("test.txt", "Hello Go-Storage!")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("✅ 上传成功: %s\n", result.Key)
+
+    // 检查文件是否存在
+    exists, _ := storage.Exists("test.txt")
+    fmt.Printf("✅ 文件存在: %v\n", exists)
+
+    // 读取内容
+    content, _ := storage.GetString("test.txt")
+    fmt.Printf("✅ 文件内容: %s\n", content)
+
+    // 获取 URL
+    url, _ := storage.URL("test.txt")
+    fmt.Printf("✅ 文件 URL: %s\n", url)
+
+    // 删除文件
+    storage.Delete("test.txt")
+    fmt.Println("✅ 文件已删除")
+}
+EOF
+
+# 4. 运行
+go run main.go
+```
+
+输出：
+```
+✅ 上传成功: test.txt
+✅ 文件存在: true
+✅ 文件内容: Hello Go-Storage!
+✅ 文件 URL: http://localhost:8080/files/test.txt
+✅ 文件已删除
+```
+
 ## 安装
 
 ```bash
