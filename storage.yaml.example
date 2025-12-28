@@ -4,7 +4,7 @@
 storage:
   default: local
   disks:
-    # 本地存储（内置，无需额外 import）
+    # 本地存储（内置）
     local:
       driver: local
       root: ./uploads
@@ -51,4 +51,5 @@ storage:
       access_key: ${QINIU_ACCESS_KEY}
       secret_key: ${QINIU_SECRET_KEY}
       domain: https://cdn.example.com
-      region: z0  # z0=华东, z1=华北, z2=华南
+      region: z0        # z0=华东, z1=华北, z2=华南
+      private: false    # 是否私有空间

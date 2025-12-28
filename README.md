@@ -24,9 +24,8 @@
 | `aliyun` / `oss` | 阿里云 OSS | ✅ 可用 |
 | `tencent` / `cos` | 腾讯云 COS | ✅ 可用 |
 | `s3` / `minio` | AWS S3 / MinIO | ✅ 可用 |
-| `qiniu` | 七牛云 | 🚧 开发中 |
+| `qiniu` | 七牛云 | ✅ 可用 |
 | `huawei` | 华为云 OBS | 🚧 开发中 |
-| `baidu` | 百度云 BOS | 🚧 开发中 |
 | `upyun` | 又拍云 | 🚧 开发中 |
 | `azure` | Azure Blob | 🚧 开发中 |
 | `gcs` | Google Cloud Storage | 🚧 开发中 |
@@ -42,6 +41,7 @@ go get github.com/wdcbot/go-storage
 go get github.com/wdcbot/go-storage/drivers/aliyun   # 阿里云 OSS
 go get github.com/wdcbot/go-storage/drivers/tencent  # 腾讯云 COS
 go get github.com/wdcbot/go-storage/drivers/s3       # AWS S3 / MinIO
+go get github.com/wdcbot/go-storage/drivers/qiniu    # 七牛云
 ```
 
 ## 快速开始
