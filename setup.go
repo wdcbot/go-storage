@@ -1,9 +1,12 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"strings"
 	"sync"
 )
 
@@ -188,6 +191,80 @@ func (d *DiskWrapper) URL(key string) (string, error) {
 	return s.URL(context.Background(), key)
 }
 
+// PutFile uploads a file from local path.
+func (d *DiskWrapper) PutFile(key, filePath string, opts ...UploadOption) (*UploadResult, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("storage: failed to open file: %w", err)
+	}
+	defer f.Close()
+
+	// Auto-detect content type if not specified
+	hasContentType := false
+	for _, opt := range opts {
+		testOpts := &UploadOptions{}
+		opt(testOpts)
+		if testOpts.ContentType != "" {
+			hasContentType = true
+			break
+		}
+	}
+	if !hasContentType {
+		if ct := DetectContentType(filePath); ct != "" {
+			opts = append(opts, WithContentType(ct))
+		}
+	}
+
+	return d.Put(key, f, opts...)
+}
+
+// PutBytes uploads bytes directly.
+func (d *DiskWrapper) PutBytes(key string, data []byte, opts ...UploadOption) (*UploadResult, error) {
+	return d.Put(key, bytes.NewReader(data), opts...)
+}
+
+// PutString uploads a string directly.
+func (d *DiskWrapper) PutString(key, content string, opts ...UploadOption) (*UploadResult, error) {
+	return d.Put(key, strings.NewReader(content), opts...)
+}
+
+// GetBytes downloads and returns bytes.
+func (d *DiskWrapper) GetBytes(key string) ([]byte, error) {
+	reader, err := d.Get(key)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return io.ReadAll(reader)
+}
+
+// GetString downloads and returns string.
+func (d *DiskWrapper) GetString(key string) (string, error) {
+	data, err := d.GetBytes(key)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+// MustPut uploads and panics on error.
+func (d *DiskWrapper) MustPut(key string, reader io.Reader, opts ...UploadOption) *UploadResult {
+	result, err := d.Put(key, reader, opts...)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}
+
+// MustGet downloads and panics on error.
+func (d *DiskWrapper) MustGet(key string) io.ReadCloser {
+	reader, err := d.Get(key)
+	if err != nil {
+		panic(err)
+	}
+	return reader
+}
+
 // --- Package-level shortcuts using default disk ---
 
 // Put uploads to the default disk.
@@ -213,4 +290,31 @@ func Exists(key string) (bool, error) {
 // URL returns URL from the default disk.
 func URL(key string) (string, error) {
 	return Disk("").URL(key)
+}
+
+// --- Convenience functions ---
+
+// PutFile uploads a file from local path.
+func PutFile(key, filePath string, opts ...UploadOption) (*UploadResult, error) {
+	return Disk("").PutFile(key, filePath, opts...)
+}
+
+// PutBytes uploads bytes directly.
+func PutBytes(key string, data []byte, opts ...UploadOption) (*UploadResult, error) {
+	return Disk("").PutBytes(key, data, opts...)
+}
+
+// PutString uploads a string directly.
+func PutString(key, content string, opts ...UploadOption) (*UploadResult, error) {
+	return Disk("").PutString(key, content, opts...)
+}
+
+// GetBytes downloads and returns bytes.
+func GetBytes(key string) ([]byte, error) {
+	return Disk("").GetBytes(key)
+}
+
+// GetString downloads and returns string.
+func GetString(key string) (string, error) {
+	return Disk("").GetString(key)
 }

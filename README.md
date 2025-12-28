@@ -169,15 +169,22 @@ func main() {
 
 ```go
 // 默认 disk
-storage.Put(key, reader)           // 上传
-storage.Get(key)                   // 下载
+storage.Put(key, reader)           // 上传 io.Reader
+storage.PutFile(key, "/path/to/file")  // 上传本地文件（自动检测 Content-Type）
+storage.PutBytes(key, []byte{...})     // 上传 bytes
+storage.PutString(key, "hello")        // 上传字符串
+
+storage.Get(key)                   // 下载，返回 io.ReadCloser
+storage.GetBytes(key)              // 下载，返回 []byte
+storage.GetString(key)             // 下载，返回 string
+
 storage.Delete(key)                // 删除
 storage.Exists(key)                // 检查存在
 storage.URL(key)                   // 获取 URL
 
 // 指定 disk
 storage.Disk("aliyun").Put(key, reader)
-storage.Disk("aliyun").Get(key)
+storage.Disk("aliyun").PutFile(key, "/path/to/file")
 ```
 
 ### 带 Context（需要超时控制时）
