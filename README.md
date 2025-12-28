@@ -2,8 +2,9 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/wdcbot/go-storage.svg)](https://pkg.go.dev/github.com/wdcbot/go-storage)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wdcbot/go-storage)](https://goreportcard.com/report/github.com/wdcbot/go-storage)
-[![Test](https://github.com/wdcbot/go-storage/actions/workflows/test.yml/badge.svg)](https://github.com/wdcbot/go-storage/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> ⚠️ **Alpha 版本** - 首次发布，仍在测试中，可能存在 bug。欢迎试用体验，反馈问题！
 
 一个配置驱动的 Go 文件存储库。告别繁琐的初始化代码，只需一个配置文件即可使用多种存储后端。
 
