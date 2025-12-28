@@ -177,19 +177,3 @@ func InitFromEnv(envVar string) error {
 	globalMu.Unlock()
 	return nil
 }
-
-// Disk returns a storage backend from the global manager.
-func Disk(name string) (Storage, error) {
-	globalMu.RLock()
-	mgr := globalManager
-	globalMu.RUnlock()
-	if mgr == nil {
-		return nil, fmt.Errorf("storage: global manager not initialized (call Init first)")
-	}
-	return mgr.Disk(name)
-}
-
-// Default returns the default storage from the global manager.
-func Default() (Storage, error) {
-	return Disk("")
-}

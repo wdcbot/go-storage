@@ -18,19 +18,18 @@
 
 ## 支持的存储后端
 
-| 驱动 | 说明 |
-|------|------|
-| `local` | 本地文件系统 |
-| `aliyun` / `alioss` | 阿里云 OSS |
-| `tencent` / `cos` | 腾讯云 COS |
-| `s3` | AWS S3 |
-| `minio` | MinIO (S3 兼容) |
-| `qiniu` | 七牛云 |
-| `huawei` / `obs` | 华为云 OBS |
-| `baidu` / `bos` | 百度云 BOS |
-| `upyun` | 又拍云 |
-| `azure` / `azblob` | Azure Blob Storage |
-| `gcs` / `google` | Google Cloud Storage |
+| 驱动 | 说明 | 需要 import |
+|------|------|-------------|
+| `local` | 本地文件系统 | ❌ 内置 |
+| `aliyun` | 阿里云 OSS | ✅ `drivers/aliyun` |
+| `tencent` | 腾讯云 COS | ✅ `drivers/tencent` |
+| `s3` | AWS S3 / MinIO | ✅ `drivers/s3` |
+| `qiniu` | 七牛云 | ✅ `drivers/qiniu` |
+| `huawei` | 华为云 OBS | ✅ `drivers/huawei` |
+| `baidu` | 百度云 BOS | ✅ `drivers/baidu` |
+| `upyun` | 又拍云 | ✅ `drivers/upyun` |
+| `azure` | Azure Blob | ✅ `drivers/azure` |
+| `gcs` | Google Cloud Storage | ✅ `drivers/gcs` |
 
 ## 安装
 
@@ -79,10 +78,13 @@ storage:
 package main
 
 import (
+    "strings"
+    
     "github.com/spf13/viper"
     "github.com/wdcbot/go-storage"
-    _ "github.com/wdcbot/go-storage/drivers/local"
-    _ "github.com/wdcbot/go-storage/drivers/aliyun"
+    // local driver 已内置，无需 import
+    // 其他 driver 按需 import:
+    // _ "github.com/wdcbot/go-storage/drivers/aliyun"
 )
 
 func main() {
