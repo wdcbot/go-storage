@@ -18,18 +18,20 @@
 
 ## 支持的存储后端
 
-| 驱动 | 说明 | 需要 import |
-|------|------|-------------|
-| `local` | 本地文件系统 | ❌ 内置 |
-| `aliyun` | 阿里云 OSS | ✅ `drivers/aliyun` |
-| `tencent` | 腾讯云 COS | ✅ `drivers/tencent` |
-| `s3` | AWS S3 / MinIO | ✅ `drivers/s3` |
-| `qiniu` | 七牛云 | ✅ `drivers/qiniu` |
-| `huawei` | 华为云 OBS | ✅ `drivers/huawei` |
-| `baidu` | 百度云 BOS | ✅ `drivers/baidu` |
-| `upyun` | 又拍云 | ✅ `drivers/upyun` |
-| `azure` | Azure Blob | ✅ `drivers/azure` |
-| `gcs` | Google Cloud Storage | ✅ `drivers/gcs` |
+| 驱动 | 说明 | 状态 |
+|------|------|------|
+| `local` | 本地文件系统 | ✅ 内置可用 |
+| `aliyun` | 阿里云 OSS | 🚧 开发中 |
+| `tencent` | 腾讯云 COS | 🚧 开发中 |
+| `s3` | AWS S3 / MinIO | 🚧 开发中 |
+| `qiniu` | 七牛云 | 🚧 开发中 |
+| `huawei` | 华为云 OBS | 🚧 开发中 |
+| `baidu` | 百度云 BOS | 🚧 开发中 |
+| `upyun` | 又拍云 | 🚧 开发中 |
+| `azure` | Azure Blob | 🚧 开发中 |
+| `gcs` | Google Cloud Storage | 🚧 开发中 |
+
+> 云存储 driver 代码在 `_examples/drivers/` 目录，可参考实现。正式版本即将发布。
 
 ## 安装
 
@@ -37,14 +39,7 @@
 go get github.com/wdcbot/go-storage
 ```
 
-云存储 driver 按需安装：
-```bash
-go get github.com/wdcbot/go-storage/drivers/aliyun   # 阿里云
-go get github.com/wdcbot/go-storage/drivers/tencent  # 腾讯云
-go get github.com/wdcbot/go-storage/drivers/s3       # AWS S3 / MinIO
-go get github.com/wdcbot/go-storage/drivers/qiniu    # 七牛云
-# ... 更多见下方表格
-```
+目前只有 `local` driver 可用，云存储 driver 开发中。
 
 ## 快速开始
 
@@ -75,13 +70,10 @@ storage:
 package main
 
 import (
-    "strings"
+    "fmt"
     
     "github.com/spf13/viper"
     "github.com/wdcbot/go-storage"
-    // local driver 已内置，无需 import
-    // 其他 driver 按需 import:
-    // _ "github.com/wdcbot/go-storage/drivers/aliyun"
 )
 
 func main() {
@@ -92,24 +84,15 @@ func main() {
     // 一行初始化
     storage.MustSetup(viper.GetStringMap("storage"))
     
-    // 直接用！
-    storage.Put("hello.txt", strings.NewReader("Hello World"))
-    
-    // 指定 disk
-    storage.Disk("aliyun").Put("images/photo.jpg", file)
+    // 上传
+    storage.PutString("hello.txt", "Hello World")
     
     // 下载
-    reader, _ := storage.Get("hello.txt")
-    defer reader.Close()
+    content, _ := storage.GetString("hello.txt")
+    fmt.Println(content)
     
     // 删除
     storage.Delete("hello.txt")
-    
-    // 检查存在
-    exists, _ := storage.Exists("hello.txt")
-    
-    // 获取 URL
-    url, _ := storage.URL("hello.txt")
 }
 ```
 
